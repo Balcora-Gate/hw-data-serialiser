@@ -257,7 +257,7 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 			if (process.argv.slice(2).includes(`-db`)) {
 				console.log(`Attempting to insert to db...`);
 				const MongoClient = mongodb.MongoClient;
-				const uri = `mongodb+srv://${process.env.CLUSTER_USER_NAME}:${process.env.CLUSTER_USER_PASS}@balcora-0jmga.mongodb.net/test?retryWrites=true&w=majority`;
+				const uri = `mongodb+srv://${process.env.CLUSTER_USER_NAME}:${process.env.CLUSTER_USER_PASS}@${process.env.CLUSTER_STR}`;
 				const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 				
 				await new Promise((res, rej) => {
@@ -266,16 +266,16 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 							console.log(err);
 							rej();
 						}
-						const db = client.db(`game_data_playerspatch_11`);
+						const db = client.db(process.env.CLUSTER_DB_NAME);
 						for (const [cat, cat_data] of Object.entries(data)) {
 							if (cat === `default`) continue;
 							const collection = db.collection(cat);
 							collection.remove({}); // clear old data
 							collection.insertMany(cat_data); // write new
 						}
-						console.log(`DB write success (at baclora::game_data_playerspatch_11)!`);
+						console.log(`DB write success!`);
 						client.close();
-						console.log(`closed, exiting`);
+						console.log(`Closed, exiting`);
 						res();
 					});
 				});
@@ -286,5 +286,6 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 		}
 		rl.close();
 		process.stdin.destroy();
+		process.exit();
 	});
 });
