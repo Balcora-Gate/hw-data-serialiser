@@ -1,3 +1,4 @@
+require('dotenv').config();
 const readline = require("readline");
 const readdir = require("recursive-readdir");
 const fs = require("fs");
@@ -146,7 +147,7 @@ function rawToJson(category, data) {
 					`default_damage_mult`
 				];
 				const wepn_pen_data = wepn_pen_params.reduce((acc, param, index) => {
-					acc[param] = wepn_pen_values[index].trim();
+					if (wepn_pen_values[index]) acc[param] = wepn_pen_values[index].trim();
 					return acc;
 				}, {});
 				if (data.match(/setPenetration\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*]+)/m) === null) {
@@ -256,7 +257,7 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 			if (process.argv.slice(2).includes(`-db`)) {
 				console.log(`Attempting to insert to db...`);
 				const MongoClient = mongodb.MongoClient;
-				const uri = "mongodb+srv://Novaras:kdpkenWj4Aqu1FWW@balcora-0jmga.mongodb.net/test?retryWrites=true&w=majority";
+				const uri = `mongodb+srv://${process.env.CLUSTER_USER_NAME}:${process.env.CLUSTER_USER_PASS}@balcora-0jmga.mongodb.net/test?retryWrites=true&w=majority`;
 				const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 				
 				await new Promise((res, rej) => {
@@ -269,11 +270,12 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 						for (const [cat, cat_data] of Object.entries(data)) {
 							if (cat === `default`) continue;
 							const collection = db.collection(cat);
-							collection.remove({});
-							collection.insertMany(cat_data);
+							collection.remove({}); // clear old data
+							collection.insertMany(cat_data); // write new
 						}
 						console.log(`DB write success (at baclora::game_data_playerspatch_11)!`);
 						client.close();
+						console.log(`closed, exiting`);
 						res();
 					});
 				});
@@ -283,5 +285,6 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 			console.log(err);
 		}
 		rl.close();
+		process.stdin.destroy();
 	});
 });
