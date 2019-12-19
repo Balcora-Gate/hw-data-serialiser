@@ -1,6 +1,6 @@
 {
   "name": "hw-data-compiler",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "compiles data from extracted mod directories",
   "main": "main.js",
   "scripts": {

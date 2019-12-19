@@ -258,23 +258,39 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 				console.log(`Attempting to insert to db...`);
 				const MongoClient = mongodb.MongoClient;
 				const uri = `mongodb+srv://${process.env.CLUSTER_USER_NAME}:${process.env.CLUSTER_USER_PASS}@${process.env.CLUSTER_STR}`;
+				console.log(uri);
 				const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 				
 				await new Promise((res, rej) => {
-					client.connect(err => {
+					client.connect(async err => {
 						if (err !== null) {
 							console.log(err);
-							rej();
+							rej(err);
 						}
 						const db = client.db(process.env.CLUSTER_DB_NAME);
+						db.on(`error`, (err) => {
+							console.log(err);
+							rej(err);
+						});
 						for (const [cat, cat_data] of Object.entries(data)) {
+							console.group(cat);
 							if (cat === `default`) continue;
-							const collection = db.collection(cat);
-							collection.remove({}); // clear old data
-							collection.insertMany(cat_data); // write new
+							const collection = db.collection(cat, (err, resu) => {
+								if (err) console.log(err);
+								else console.log(resu);
+							});
+							await collection.deleteMany({}); // clear old data
+							await collection.insertMany(cat_data, (err, w_res) => {
+								if (err) {
+									console.group(`err:`);
+									console.log(err);
+									console.groupEnd(`err:`);
+								}
+							}); // write new
+							console.groupEnd(cat);
 						}
-						console.log(`DB write success!`);
-						client.close();
+						console.log(`DB write success (at ${process.env.CLUSTER_DB_NAME})!`);
+						await client.close();
 						console.log(`Closed, exiting`);
 						res();
 					});
