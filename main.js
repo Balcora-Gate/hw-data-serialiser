@@ -49,8 +49,8 @@ function makeDataGetter(list, read) {
 	};
 }
 
-function getParamVals(text, func_name, param_list) {
-	const pattern = new RegExp(`${func_name}\\(NewWeaponType,(["\\w,\\s.]+)\\);`, `m`);
+function getParamVals(text, func_name, param_list, obj_type) {
+	const pattern = new RegExp(`${func_name}\\(${obj_type},(["\\w,\\s.]+)\\);`, `m`);
 	if (text.match(pattern) === null) {
 		return {};
 	}
@@ -89,6 +89,29 @@ function rawToJson(category, data) {
 					HP: vals[1],
 					regen_time: vals[2]
 				};
+			},
+			hardpoints: (data) => {
+				const args_pattern = /(StartShipHardPointConfig\([\w\s,"]*\);)/gm;
+				const config_instances = Object.keys(genKeyVals(data, args_pattern));
+				const hardpoint_conf_params = [
+					`name`,
+					`joint_name`,
+					`type`,
+					`family`,
+					`destructability`,
+					`default_sub`,
+					`potential_sub_0`,
+					`potential_sub_1`,
+					`potential_sub_2`,
+					`potential_sub_3`,
+					`potential_sub_4`,
+					`potential_sub_5`,
+					`potential_sub_6`,
+					`potential_sub_7`,
+				];
+				return config_instances.map(config_instance => {
+					return getParamVals(config_instance, `StartShipHardPointConfig`, hardpoint_conf_params, `NewShipType`);
+				});
 			}
 		},
 		wepn: {
@@ -122,7 +145,7 @@ function rawToJson(category, data) {
 					`beam_penetration_threshold`
 				];
 				// zip these together into an obj like [param]: value
-				return getParamVals(data, `StartWeaponConfig`, wepn_cnfg_params);
+				return getParamVals(data, `StartWeaponConfig`, wepn_cnfg_params, `NewWeaponType`);
 			},
 			result: (data) => {
 				// const wepn_result_values = data.match(/AddWeaponResult\(NewWeaponType,(["\w,\s.]+)\);/gm)[1].split(`,`);
@@ -134,7 +157,7 @@ function rawToJson(category, data) {
 					`max_effect_val`,
 					`spawned_weapon_effect`
 				];
-				return getParamVals(data, `AddWeaponResult`, wepn_result_params);
+				return getParamVals(data, `AddWeaponResult`, wepn_result_params, `NewWeaponType`);
 			},
 			penetration: (data) => {
 				// if no pen values set, return immediately
