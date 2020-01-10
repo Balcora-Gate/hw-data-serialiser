@@ -170,10 +170,10 @@ function rawToJson(category, data) {
 			},
 			penetration: (data) => {
 				// if no pen values set, return immediately
-				if (data.match(/setPenetration/m) === null) {
+				if (data.match(/(?:^| |\t+)setPenetration/m) === null) {
 					return {};
 				}
-				const wepn_pen_values = data.match(/setPenetration\(NewWeaponType,(["\w\s,.]+)/m)[1].split(`,`);
+				const wepn_pen_values = data.match(/(?:^| |\t+)setPenetration\(NewWeaponType,(["\w\s,.]+)/m)[1].split(`,`);
 				const wepn_pen_params = [
 					`field_penetration_percent`,
 					`default_damage_mult`
@@ -182,11 +182,11 @@ function rawToJson(category, data) {
 					if (wepn_pen_values[index]) acc[param] = wepn_pen_values[index].trim();
 					return acc;
 				}, {});
-				if (data.match(/setPenetration\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*]+)/m) === null) {
+				if (data.match(/(?:^| |\t+)setPenetration\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*]+)/m) === null) {
 					return {};
 				}
 				const wepn_pen_exceptions = data
-					.match(/setPenetration\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*]+)/m)[1]
+					.match(/(?:^| |\t+)setPenetration\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*]+)/m)[1]
 					.split(`,`)
 					.map(raw => {
 						const kv = raw.match(/{(.+)=(.+)}/m);
@@ -204,17 +204,17 @@ function rawToJson(category, data) {
 				return { ...wepn_pen_data, ...wepn_pen_exceptions };
 			},
 			accuracy: (data) => {
-				if (data.match(/setAccuracy/m) === null) {
+				if (data.match(/(?:^| |\t+)setAccuracy/m) === null) {
 					return {};
 				}
 				const wepn_acc_data = {
-					default_acc_mult: data.match(/setAccuracy\(NewWeaponType,(["\w\s.]+)/m)[1].trim()
+					default_acc_mult: data.match(/(?:^| |\t+)setAccuracy\(NewWeaponType,(["\w\s.]+)/m)[1].trim()
 				};
-				if (data.match(/setAccuracy\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*/]+)/m) === null) {
+				if (data.match(/(?:^| |\t+)setAccuracy\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*/]+)/m) === null) {
 					return {};
 				}
 				const wepn_acc_exceptions = data
-					.match(/setAccuracy\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*/]+)/m)[1]
+					.match(/(?:^| |\t+)setAccuracy\(NewWeaponType,["\w\s,.]+,([\w\s={}.,*/]+)/m)[1]
 					.split(`,`)
 					.map(raw => {
 						const kv = raw.match(/{(.+)=([^}]+)/m);
@@ -237,7 +237,16 @@ function rawToJson(category, data) {
 		},
 		subs: {
 			attribs: (data) => {
-				return genKeyVals(data, /\w+\.(\w+)\s*=\s*(?:getShipNum\(NewShipType,\s*\S+\s*)?(?:getShipStr\(NewShipType,\s*\S+,\s*)?([\w."$]+)/gm);
+				return genKeyVals(data, /(?:^| |\t+)\w+\.(\w+)\s*=\s*(?:getShipNum\(NewShipType,\s*\S+\s*)?(?:getShipStr\(NewShipType,\s*\S+,\s*)?([\w."$]+)/gm);
+			},
+			weapon: (data) => {
+				const pattern = /(?:^| |\t+)StartSubSystemWeaponConfig\(NewSubSystemType,([\w\s"]+)/gm;
+				const result = pattern.exec(data);
+				if (result) {
+					return result[1];
+				} else {
+					return undefined;
+				}
 			}
 		}
 	};
