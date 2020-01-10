@@ -90,6 +90,15 @@ function rawToJson(category, data) {
 					regen_time: vals[2]
 				};
 			},
+			innate_weapons: (data) => {
+				const pattern = /StartShipWeaponConfig\(NewShipType,([\w\s"]+),.+\);/gm;
+				const weapon_list = [];
+				let match;
+				while ((match = pattern.exec(data)) != null) {
+					weapon_list.push(match[1]);
+				}
+				return weapon_list;
+			},
 			hardpoints: (data) => {
 				const args_pattern = /(StartShipHardPointConfig\([\w\s,"]*\);)/gm;
 				const config_instances = Object.keys(genKeyVals(data, args_pattern));
