@@ -50,7 +50,7 @@ function makeDataGetter(list, read) {
 }
 
 function getParamVals(text, func_name, param_list, obj_type) {
-	const pattern = new RegExp(`${func_name}\\(${obj_type},(["\\w,\\s.]+)\\);`, `m`);
+	const pattern = new RegExp(`(?:^| |\t+)${func_name}\\(${obj_type},(["\\w,\\s.]+)\\);`, `m`);
 	if (text.match(pattern) === null) {
 		return {};
 	}
@@ -73,14 +73,14 @@ function rawToJson(category, data) {
 	const generators = {
 		ship: {
 			attribs: (data) => {
-				return genKeyVals(data, /\w+\.(\w+)\s*=\s*(?:getShipNum\(NewShipType,\s*\S+\s*)?(?:getShipStr\(NewShipType,\s*\S+,\s*)?([\w."$]+)/gm);
+				return genKeyVals(data, /(?:^| |\t+)\w+\.(\w+)\s*=\s*(?:getShipNum\(NewShipType,\s*\S+\s*)?(?:getShipStr\(NewShipType,\s*\S+,\s*)?([\w."$]+)/gm);
 			},
 			abilities: (data) => {
-				return genKeyVals(data, /addAbility\(NewShipType,([\"\w]+)(?:,([\d\.\,]+))?/gm);
+				return genKeyVals(data, /(?:^| |\t+)addAbility\(NewShipType,([\"\w]+)(?:,([\d\.\,]+))?/gm);
 			},
 			emp: (data) => {
 				// return genKeyVals(data, /addShield\(NewShipType,\s*[\w"]+,(\d+),(\d+)\)/gm);
-				const pattern = /addShield\(NewShipType,\s*[\w"]+,(\d+),(\d+)\)/m;
+				const pattern = /(?:^| |\t+)addShield\(NewShipType,\s*[\w"]+,(\d+),(\d+)\)/m;
 				const vals = data.match(pattern);
 				if (vals === null) {
 					return {};
@@ -91,7 +91,7 @@ function rawToJson(category, data) {
 				};
 			},
 			innate_weapons: (data) => {
-				const pattern = /StartShipWeaponConfig\(NewShipType,([\w\s"]+),.+\);/gm;
+				const pattern = /(?:^| |\t+)StartShipWeaponConfig\(NewShipType,([\w\s"]+),.+\);/gm;
 				const weapon_list = [];
 				let match;
 				while ((match = pattern.exec(data)) != null) {
@@ -100,7 +100,7 @@ function rawToJson(category, data) {
 				return weapon_list;
 			},
 			hardpoints: (data) => {
-				const args_pattern = /(StartShipHardPointConfig\([\w\s,"]*\);)/gm;
+				const args_pattern = /(?:^| |\t+)(StartShipHardPointConfig\([\w\s,"]*\);)/gm;
 				const config_instances = Object.keys(genKeyVals(data, args_pattern));
 				const hardpoint_conf_params = [
 					`name`,
