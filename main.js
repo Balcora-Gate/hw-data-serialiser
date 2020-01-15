@@ -50,7 +50,7 @@ function makeDataGetter(list, read) {
 }
 
 function getParamVals(text, func_name, param_list, obj_type) {
-	const pattern = new RegExp(`(?:^| |\t+)${func_name}\\(${obj_type},(["\\w,\\s.]+)\\);`, `m`);
+	const pattern = new RegExp(`(?:^| |\\t)+${func_name}\\(${obj_type},(["\\w,\\s.*/]+)\\)`, `m`);
 	if (text.match(pattern) === null) {
 		return {};
 	}
@@ -321,7 +321,7 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 								else console.log(resu);
 							});
 							await collection.deleteMany({}); // clear old data
-							await collection.insertMany(cat_data, (err, w_res) => {
+							await collection.insertMany(cat_data, (err) => {
 								if (err) {
 									console.group(`err:`);
 									console.log(err);
