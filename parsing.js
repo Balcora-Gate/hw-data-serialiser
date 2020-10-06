@@ -1,3 +1,5 @@
+const util = require(`./util`);
+
 /**
  * @typedef { Object.<string, string | number> } EntityData
  */
@@ -24,7 +26,18 @@ function getParamVals(text, func_name, param_list, obj_type) {
 	}
 	const vals = text.match(pattern)[1].split(`,`);
 	return param_list.reduce((acc, param, index) => {
-		acc[param] = vals[index];
+		if (typeof vals[index] === `string`) {
+			vals[index] = util.stripQuotes(vals[index]);
+		}
+		const is_empty_str = (typeof vals[index] === `string` && vals[index].length === 0);
+		if (!vals[index] || is_empty_str) {
+			acc[param] = null;
+		} else {
+			if (is_empty_str) {
+				vals[index] = null;
+			}
+			acc[param] = vals[index];
+		}
 		return acc;
 	}, {});
 }
@@ -46,8 +59,16 @@ function rawToJson(category, data) {
 		const obj = {};
 		let match;
 		while ((match = pattern.exec(data)) != null) {
-			match[2] = (match[2] ? match[2] : ``).replace(/^"|"$/gm, ``); // remove extra quotes
-			obj[match[1]] = match[2];
+			let [key, value] = [...match.slice(1)];
+			key = util.stripQuotes(key);
+			console.log(`key: ${key}, val: ${value}`);
+			if (value && value.length) {
+				value = util.tryParseFloat(util.stripQuotes(value));
+			} else {
+				value = null;
+			}
+			console.groupEnd();
+			obj[key] = value;
 		}
 		return obj;
 	};
