@@ -2,6 +2,21 @@
  * @typedef { Object.<string, string | number> } EntityData
  */
 
+ /**
+  * Reads a line from src containing some function call, and attempts to
+  * 'zip' the keys in `param_list` with their values, i.e:
+  * 
+  * `addAbility(NewShipType,"HyperSpaceCommand",0,2,400,800,0,3);`
+  * 
+  * is added to the `abilities` property on the main obj:
+  * 
+  * `"abilties": { "HyperspaceCommand": "0,2,400,800,0,3" }`
+  * 
+  * @param { string } text The line we want to parse
+  * @param { string } func_name The function's name (i.e `addAbility`)
+  * @param { string[] } param_list The function's parameters, assigned names (official names don't exist).
+  * @param { string } obj_type The entity's 'type' in src: `NewShipType`, `NewSubSystemType`, etc.
+  */
 function getParamVals(text, func_name, param_list, obj_type) {
 	const pattern = new RegExp(`(?:^| |\\t)+${func_name}\\(${obj_type},(["\\w,\\s.*/]+)\\)`, `m`);
 	if (text.match(pattern) === null) {
@@ -31,10 +46,15 @@ function rawToJson(category, data) {
 		const obj = {};
 		let match;
 		while ((match = pattern.exec(data)) != null) {
+			match[2] = (match[2] ? match[2] : ``).replace(/^"|"$/gm, ``); // remove extra quotes
 			obj[match[1]] = match[2];
 		}
 		return obj;
 	};
+	// The idea is to define the JSON structure in code, and provide
+	// 'generators' for each property. The generator can be run to 'resolve'
+	// the correct data for that property. Looping through the generators for
+	// each category (see below), it's simple to convert raw lua into parsed json.
 	const generators = {
 		ship: {
 			attribs: (data) => {
@@ -219,6 +239,8 @@ function rawToJson(category, data) {
 	if (generators[category] === undefined) {
 		throw new Error(`Unknown data category: ${category}`);
 	}
+	// for each subcat (i.e, 'attribs', 'innate_weapons' etc), run its generator to grab the
+	// data from file, assigning it to the subcat key:
 	for (const [subcat, generator] of Object.entries(generators[category])) {
 		formatted[subcat] = generator(data);
 	}
