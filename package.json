@@ -9,6 +9,7 @@
   "author": "Novaras (Fear)",
   "license": "ISC",
   "devDependencies": {
+    "babel-eslint": "^10.1.0",
     "eslint": "^6.3.0"
   },
   "dependencies": {
