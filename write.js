@@ -25,26 +25,26 @@ const writeToDb = async (data) => {
 	return new Promise((res, rej) => {
 		client.connect(async err => {
 			if (err !== null) {
-				console.log(err);
+				console.error(err);
 				rej(err);
 			}
 			const db = client.db(process.env.CLUSTER_DB_NAME);
 			db.on(`error`, (err) => {
-				console.log(err);
+				console.error(err);
 				rej(err);
 			});
 			for (const [cat, cat_data] of Object.entries(data)) {
 				console.group(cat);
 				if (cat === `default`) continue;
 				const collection = db.collection(cat, (err, resu) => {
-					if (err) console.log(err);
+					if (err) console.error(err);
 					else console.log(resu);
 				});
 				await collection.deleteMany({}); // clear old data
 				await collection.insertMany(cat_data, (err) => {
 					if (err) {
 						console.group(`err:`);
-						console.log(err);
+						console.error(err);
 						console.groupEnd(`err:`);
 					}
 				}); // write new

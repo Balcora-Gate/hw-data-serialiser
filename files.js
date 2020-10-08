@@ -1,7 +1,7 @@
 const readdir = require("recursive-readdir");
 const fs = require("fs");
 
-const rawToJson = require(`./parsing`);
+const rawToJson = require(`./parsing`).rawToJson;
 
 /**
  * A `Reader` is just a function
@@ -37,9 +37,9 @@ function makeReader(root_dir, valid_extensions) {
 						console.log(`WARNING:`);
 						console.log(err);
 					}
-					console.log(`\t${path}`);
+					const name =  path.match(/(\w+)\.\w+$/m)[1];
 					const cat = pattern.exec(path)[1];
-					res({ name: path.match(/(\w+)\.\w+$/m)[1], category: cat, ...rawToJson(cat, contents) });
+					res(rawToJson(name, cat, contents));
 				});
 			});
 		}));

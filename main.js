@@ -3,6 +3,8 @@ const readline = require("readline");
 
 const writers = require(`./write`);
 const { makeLister, makeReader, makeDataGetter } = require(`./files`);
+const { linkUsedBy } = require('./parsing');
+const { link } = require('fs');
 
 const rl = readline.createInterface({
 	input: process.stdin,
@@ -25,10 +27,10 @@ rl.question(`Enter the root of the mod directory: `, async (answer) => {
 			console.log(`\t${subdir}`);
 		}
 		try {
-			const data = (await dataGetter(subdirs)).reduce((acc, arr) => {
+			const data = linkUsedBy((await dataGetter(subdirs)).reduce((acc, arr) => {
 				acc[arr[0].category] = arr;
 				return acc;
-			}, {});
+			}, {}));
 			if (process.argv.slice(2).includes(`-w`)) {
 				await writers.writeToFile(data);
 			}

@@ -4,21 +4,21 @@ const util = require(`./util`);
  * @typedef { Object.<string, string | number> } EntityData
  */
 
- /**
-  * Reads a line from src containing some function call, and attempts to
-  * 'zip' the keys in `param_list` with their values, i.e:
-  * 
-  * `addAbility(NewShipType,"HyperSpaceCommand",0,2,400,800,0,3);`
-  * 
-  * is added to the `abilities` property on the main obj:
-  * 
-  * `"abilties": { "HyperspaceCommand": "0,2,400,800,0,3" }`
-  * 
-  * @param { string } text The line we want to parse
-  * @param { string } func_name The function's name (i.e `addAbility`)
-  * @param { string[] } param_list The function's parameters, assigned names (official names don't exist).
-  * @param { string } obj_type The entity's 'type' in src: `NewShipType`, `NewSubSystemType`, etc.
-  */
+/**
+ * Reads a line from src containing some function call, and attempts to
+ * 'zip' the keys in `param_list` with their values, i.e:
+ * 
+ * `addAbility(NewShipType,"HyperSpaceCommand",0,2,400,800,0,3);`
+ * 
+ * is added to the `abilities` property on the main obj:
+ * 
+ * `"abilties": { "HyperspaceCommand": "0,2,400,800,0,3" }`
+ * 
+ * @param { string } text The line we want to parse
+ * @param { string } func_name The function's name (i.e `addAbility`)
+ * @param { string[] } param_list The function's parameters, assigned names (official names don't exist).
+ * @param { string } obj_type The entity's 'type' in src: `NewShipType`, `NewSubSystemType`, etc.
+ */
 function getParamVals(text, func_name, param_list, obj_type) {
 	const pattern = new RegExp(`(?:^| |\\t)+${func_name}\\(${obj_type},(["\\w,\\s.*/]+)\\)`, `m`);
 	if (text.match(pattern) === null) {
@@ -27,7 +27,7 @@ function getParamVals(text, func_name, param_list, obj_type) {
 	const vals = text.match(pattern)[1].split(`,`);
 	return param_list.reduce((acc, param, index) => {
 		if (typeof vals[index] === `string`) {
-			vals[index] = util.stripQuotes(vals[index]);
+			vals[index] = util.stripQuotes(vals[index].toLowerCase());
 		}
 		const is_empty_str = (typeof vals[index] === `string` && vals[index].length === 0);
 		if (!vals[index] || is_empty_str) {
@@ -42,6 +42,33 @@ function getParamVals(text, func_name, param_list, obj_type) {
 	}, {});
 }
 
+const usage_records = {
+	subs: {},
+	wepn: {}
+};
+
+const linkUsedBy = (formatted_data) => {
+	for (const entity of [...(formatted_data.subs ?? []), ...(formatted_data.wepn ?? [])]) {
+		entity.used_by = {
+			ship: null,
+			subs: null
+		};
+		switch (entity.category) {
+			case `wepn`:
+				entity.used_by.subs = usage_records.wepn[entity.name]?.subs ?? null;
+				entity.used_by.ship = usage_records.wepn[entity.name]?.ship ?? null;
+				break;
+			case `subs`:
+				entity.used_by.ship = usage_records.subs[entity.name]?.ship ?? null;
+				break;
+		}
+		if (Object.values(entity.used_by).every(val => val === null)) {
+			entity.used_by = null;
+		}
+	}
+	return formatted_data;
+};
+
 /**
  * The main workhorse of the package.
  * 
@@ -54,20 +81,18 @@ function getParamVals(text, func_name, param_list, obj_type) {
  * 
  * @return { EntityData }
  */
-function rawToJson(category, data) {
+function rawToJson(name, category, data) {
 	const genKeyVals = (data, pattern) => {
 		const obj = {};
 		let match;
 		while ((match = pattern.exec(data)) != null) {
 			let [key, value] = [...match.slice(1)];
 			key = util.stripQuotes(key);
-			console.log(`key: ${key}, val: ${value}`);
 			if (value && value.length) {
 				value = util.tryParseFloat(util.stripQuotes(value));
 			} else {
 				value = null;
 			}
-			console.groupEnd();
 			obj[key] = value;
 		}
 		return obj;
@@ -101,7 +126,7 @@ function rawToJson(category, data) {
 				const weapon_list = [];
 				let match;
 				while ((match = pattern.exec(data)) != null) {
-					weapon_list.push(match[1]);
+					weapon_list.push(util.stripQuotes(match[1]).toLowerCase());
 				}
 				return weapon_list;
 			},
@@ -114,15 +139,15 @@ function rawToJson(category, data) {
 					`type`,
 					`family`,
 					`destructability`,
-					`default_sub`,
-					`potential_sub_0`,
-					`potential_sub_1`,
-					`potential_sub_2`,
-					`potential_sub_3`,
-					`potential_sub_4`,
-					`potential_sub_5`,
-					`potential_sub_6`,
-					`potential_sub_7`,
+					`default_subs`,
+					`potential_subs_0`,
+					`potential_subs_1`,
+					`potential_subs_2`,
+					`potential_subs_3`,
+					`potential_subs_4`,
+					`potential_subs_5`,
+					`potential_subs_6`,
+					`potential_subs_7`,
 				];
 				return config_instances.map(config_instance => {
 					return getParamVals(config_instance, `StartShipHardPointConfig`, hardpoint_conf_params, `NewShipType`);
@@ -239,7 +264,7 @@ function rawToJson(category, data) {
 			},
 			// misc: (data) => {
 			// 	// ugh, do this later
-			// }
+			// },
 		},
 		subs: {
 			attribs: (data) => {
@@ -249,14 +274,17 @@ function rawToJson(category, data) {
 				const pattern = /(?:^| |\t+)StartSubSystemWeaponConfig\(NewSubSystemType,([\w\s"]+)/gm;
 				const result = pattern.exec(data);
 				if (result) {
-					return result[1];
+					return util.stripQuotes(result[1].toLowerCase());
 				} else {
 					return undefined;
 				}
 			}
 		}
 	};
-	const formatted = {};
+	const formatted = {
+		name,
+		category
+	};
 	if (generators[category] === undefined) {
 		throw new Error(`Unknown data category: ${category}`);
 	}
@@ -264,8 +292,67 @@ function rawToJson(category, data) {
 	// data from file, assigning it to the subcat key:
 	for (const [subcat, generator] of Object.entries(generators[category])) {
 		formatted[subcat] = generator(data);
+		switch (category) {
+			case `ship`:
+				// link ships to weapons...
+				if (subcat === `innate_weapons`) {
+					const weapons = [...new Set(formatted[subcat])];
+					for (const wepn_name of weapons) {
+						usage_records.wepn[wepn_name] = {
+							...usage_records.wepn[wepn_name],
+							ship: [...new Set([
+								...(usage_records.wepn[wepn_name]?.ship ?? []),
+								formatted.name
+							])]
+						};
+					}
+				}
+				// link ships to subs...
+				if (subcat === `hardpoints`) {
+					const hardpoints = formatted[subcat];
+					for (const hardpoint of hardpoints) {
+						const hp_subs = [
+							hardpoint.default_subs,
+							hardpoint.potential_subs_0,
+							hardpoint.potential_subs_1,
+							hardpoint.potential_subs_2,
+							hardpoint.potential_subs_3,
+							hardpoint.potential_subs_4,
+							hardpoint.potential_subs_5,
+							hardpoint.potential_subs_6,
+							hardpoint.potential_subs_7,
+						].filter(subs => subs !== null);
+						for (const subs_name of hp_subs) {
+							usage_records.subs[subs_name] = {
+								...usage_records.subs[subs_name],
+								ship: [...new Set([
+									...(usage_records.subs[subs_name]?.ship ?? []),
+									formatted.name
+								])]
+							};
+						}
+					}
+				}
+				break;
+			case `subs`:
+				if (subcat === `weapon`) {
+					const wepn_name = formatted[subcat];
+					if (wepn_name) {
+						usage_records.wepn[wepn_name] = {
+							...usage_records[wepn_name],
+							subs: [...new Set([
+								...(usage_records[wepn_name]?.subs ?? []),
+								formatted.name
+							])]
+						};
+					}
+				}
+		}
 	}
 	return formatted;
 }
 
-module.exports = rawToJson;
+module.exports = {
+	rawToJson,
+	linkUsedBy
+};
