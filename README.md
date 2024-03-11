@@ -7,6 +7,7 @@ Real simple tool for serialising extracted mod data into JSON format. Point the 
 ---
 
 ## Usage
+
 Execution syntax:
 ```shell
 node ./main.js [-w] [-db]
