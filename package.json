@@ -1,7 +1,7 @@
 {
-  "name": "hw-data-compiler",
+  "name": "hw-data-serialiser",
   "version": "1.1.0",
-  "description": "compiles data from extracted mod directories",
+  "description": "Serialises data from HWRM `.ship`, `.subs`, and `.wepn` Lua files into JSON, writing to file and/or uploading to an Atlas DB.",
   "main": "main.js",
   "scripts": {
     "compile": "node ./main.js"

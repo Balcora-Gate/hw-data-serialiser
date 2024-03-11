@@ -1,6 +1,6 @@
-# hw-data-compiler
+# hw-data-serialiser
 
-Real simple tool for compiling extracted mod data into JSON format. Point the script to the root of the mod, specify entity types to compile, watch it go.
+Real simple tool for serialising extracted mod data into JSON format. Point the script to the root of the mod, specify entity types to serialise, watch it go.
 
 <p align="center"><img src="https://i.imgur.com/uMvwk6r.png" alt="BALCORA" /></p>
 
@@ -16,10 +16,10 @@ Quick example writing to file:
 node ./main.js -w
 ```
 Details:
-1. Clone this repo somewhere (`git clone https://github.com/HW-PlayersPatch/hw-data-compiler.git`)
-    1. If you want to use this within your own project, `npm install hw-data-compiler`
-2. Navigate into the cloned repo (probably with `cd hw-data-compiler`) and run `npm install`
-3. `npm run compile` is the command to run the script, **it can take two flags:**
+1. Clone this repo somewhere (`git clone https://github.com/HW-PlayersPatch/hw-data-serialiser.git`)
+    1. If you want to use this within your own project, `npm install hw-data-serialiser`
+2. Navigate into the cloned repo (probably with `cd hw-data-serialiser`) and run `npm install`
+3. `node ./main.js` is the command, **it can take two flags:**
     1. `-w`: 'Write to file', writes the compiled data into a file called `dump.json`
     2. `-db`: 'Write to database', writes the compiled data into an [Atlas](https://www.mongodb.com/cloud/atlas) database according to variables in your `.env` file (see below).
 4. Follow the prompts:
@@ -29,10 +29,7 @@ Details:
 
 Demonstration of writing mod contents to file:
 ```shell
-fear$ npm run compile -- -w
-
-> hw-data-compiler@1.0.0 compile /path/to/script/dir
-> node ./main.js "-w"
+❯ node .\main.js -w
 
 Enter the root of the mod directory: /path/to/mod/root
 Attempting to compile data from /path/to/mod/root
@@ -41,7 +38,8 @@ Which subdirectories? (Default is 'ship, subsystem, weapon'): <ENTER>
 [ 'ship', 'subs', 'wepn' ]
 Attempting to write...
 File write success (at ./dump.json)!
-fear$
+
+❯ 
 ```
 Everything will be dumped into a file in the same directory as the script called `dump.json`.
 
