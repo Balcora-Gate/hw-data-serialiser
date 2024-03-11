@@ -4,7 +4,7 @@
   "description": "Serialises data from HWRM `.ship`, `.subs`, and `.wepn` Lua files into JSON, writing to file and/or uploading to an Atlas DB.",
   "main": "main.js",
   "scripts": {
-    "compile": "node ./main.js"
+    "serialise": "node ./main.js"
   },
   "author": "Novaras (Fear)",
   "license": "ISC",

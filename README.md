@@ -21,19 +21,19 @@ Details:
     1. If you want to use this within your own project, `npm install hw-data-serialiser`
 2. Navigate into the cloned repo (probably with `cd hw-data-serialiser`) and run `npm install`
 3. `node ./main.js` is the command, **it can take two flags:**
-    1. `-w`: 'Write to file', writes the compiled data into a file called `dump.json`
-    2. `-db`: 'Write to database', writes the compiled data into an [Atlas](https://www.mongodb.com/cloud/atlas) database according to variables in your `.env` file (see below).
+    1. `-w`: 'Write to file', writes the serialised data into a file called `dump.json`
+    2. `-db`: 'Write to database', writes the serialised data into an [Atlas](https://www.mongodb.com/cloud/atlas) database according to variables in your `.env` file (see below).
 4. Follow the prompts:
-    1. Enter the root of the mod you want to compile (the directory containing the `keeper.txt` file)
+    1. Enter the root of the mod you want to serialise (the directory containing the `keeper.txt` file)
     2. Indicate which data categories you're interested in (comma seperated), valid arguments are `ship`, `weapon`, `subsystem`
-5. Data will be parsed and compiled, and written to the flagged destinations.
+5. Data will be parsed and serialised, and written to the flagged destinations.
 
 Demonstration of writing mod contents to file:
 ```shell
 ❯ node .\main.js -w
 
 Enter the root of the mod directory: /path/to/mod/root
-Attempting to compile data from /path/to/mod/root
+Attempting to serialise data from /path/to/mod/root
 Which subdirectories? (Default is 'ship, subsystem, weapon'): <ENTER>
 (lots of output...)
 [ 'ship', 'subs', 'wepn' ]

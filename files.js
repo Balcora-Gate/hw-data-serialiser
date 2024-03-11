@@ -10,7 +10,7 @@ const rawToJson = require(`./parsing`).rawToJson;
  * files into json format.
  * 
  * @callback Reader
- * @param { string[] } file_paths The files to compile
+ * @param { string[] } file_paths The files to serialise
  * @return { Promise.<(EntityData | string)[]> }
  */
 

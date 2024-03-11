@@ -13,7 +13,7 @@ const rl = readline.createInterface({
 
 
 rl.question(`Enter the root of the mod directory: `, async (answer) => {
-	console.log(`Attempting to compile data from ${answer}`);
+	console.log(`Attempting to serialise data from ${answer}`);
 	const list = makeLister(answer);
 	const read = makeReader(answer, [`.ship`, `.subs`, `.wepn`]);
 	const dataGetter = makeDataGetter(list, read);

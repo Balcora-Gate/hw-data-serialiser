@@ -76,7 +76,7 @@ const linkUsedBy = (formatted_data) => {
  * and the raw string contents of an entity file (i.e `hgn_interceptor.ship`) and
  * parses it into structured json format.
  * 
- * @param { string } category Category ('type') being compiled
+ * @param { string } category Category ('type') being serialised
  * @param { string } data The raw data from the read-in file (.lua)
  * 
  * @return { EntityData }
