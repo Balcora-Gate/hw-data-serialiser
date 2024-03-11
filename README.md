@@ -45,7 +45,7 @@ fear$
 ```
 Everything will be dumped into a file in the same directory as the script called `dump.json`.
 
-### .env
+### .env (optional for writing to db)
 
 First, create a copy of the `.env.example` file and call it `.env`.
 
