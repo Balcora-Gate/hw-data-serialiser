@@ -9,11 +9,11 @@ Real simple tool for compiling extracted mod data into JSON format. Point the sc
 ## Usage
 Execution syntax:
 ```shell
-npm run compile -- [-w] [-db]
+node ./main.js [-w] [-db]
 ```
 Quick example writing to file:
 ```shell
-npm run compile -- -w
+node ./main.js -w
 ```
 Details:
 1. Clone this repo somewhere (`git clone https://github.com/HW-PlayersPatch/hw-data-compiler.git`)
