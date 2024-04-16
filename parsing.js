@@ -107,11 +107,11 @@ function rawToJson(name, category, data) {
 				return genKeyVals(data, /(?:^| |\t+)\w+\.(\w+)\s*=\s*(?:getShipNum\(NewShipType,\s*\S+\s*)?(?:getShipStr\(NewShipType,\s*\S+,\s*)?([\w."$]+)/gm);
 			},
 			abilities: (data) => {
-				return genKeyVals(data, /(?:^| |\t+)addAbility\(NewShipType,([\"\w]+)(?:,([\d\.\,]+))?/gm);
+				return genKeyVals(data, /(?:^| |\t+)addAbility\(NewShipType,\s*([\"\w]+)(?:,\s*([\d\.*\,*\s*]+))?([\"\w,\s]*)([\{\s\w\=\"\},]*)\)?/gm);
 			},
 			emp: (data) => {
 				// return genKeyVals(data, /addShield\(NewShipType,\s*[\w"]+,(\d+),(\d+)\)/gm);
-				const pattern = /(?:^| |\t+)addShield\(NewShipType,\s*[\w"]+,(\d+),(\d+)\)/m;
+				const pattern = /(?:^| |\t+)addShield\(NewShipType,\s*[\w"]+,\s*(\d+),\s*(\d+)\)/m;
 				const vals = data.match(pattern);
 				if (vals === null) {
 					return {};
@@ -122,7 +122,7 @@ function rawToJson(name, category, data) {
 				};
 			},
 			innate_weapons: (data) => {
-				const pattern = /(?:^| |\t+)StartShipWeaponConfig\(NewShipType,([\w\s"]+),.+\);/gm;
+				const pattern = /(?:^| |\t+)StartShipWeaponConfig\(NewShipType,([\w\s"]+),.+\)/gm;
 				const weapon_list = [];
 				let match;
 				while ((match = pattern.exec(data)) != null) {
@@ -131,7 +131,7 @@ function rawToJson(name, category, data) {
 				return weapon_list;
 			},
 			hardpoints: (data) => {
-				const args_pattern = /(?:^| |\t+)(StartShipHardPointConfig\([\w\s,"]*\);)/gm;
+				const args_pattern = /(?:^| |\t+)(StartShipHardPointConfig\([\w\s,"]*\))/gm;
 				const config_instances = Object.keys(genKeyVals(data, args_pattern));
 				const hardpoint_conf_params = [
 					`name`,
