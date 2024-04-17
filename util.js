@@ -5,7 +5,7 @@ const tryParseFloat = (str) => {
 };
 
 const stripQuotes = (str) => {
-	return str.replace(/^"|"$/gm, ``);
+	return str.replace(/[\s*\\"\s*]*/gm, ``);
 };
 
 module.exports = {
